@@ -512,8 +512,9 @@ class Effects():
 class Net():
     """The ``net`` token defines the number and name of a net"""
 
-    number: int = 0
-    """The ``number`` token defines the integer number of the net"""
+    number: Optional[int] = 0
+    """The ``number`` token defines the integer number of the net. It is ``None`` for the KiCad 10 form
+    ``(net "NAME")``, where nets are referenced by name only"""
 
     name: str = ""
     """The ``name`` token defines the name of the net"""
@@ -539,8 +540,13 @@ class Net():
             raise Exception("Expression does not have the correct type")
 
         object = cls()
-        object.number = exp[1]
-        object.name = exp[2]
+        if len(exp) == 2:
+            # KiCad 10 references nets by name only: (net "NAME")
+            object.number = None
+            object.name = exp[1]
+        else:
+            object.number = exp[1]
+            object.name = exp[2]
         return object
 
     def to_sexpr(self, indent: int = 0, newline: bool = False) -> str:
@@ -556,6 +562,8 @@ class Net():
         indents = ' '*indent
         endline = '\n' if newline else ''
 
+        if self.number is None:
+            return f'{indents}(net "{dequote(self.name)}"){endline}'
         return f'{indents}(net {self.number} "{dequote(self.name)}"){endline}'
 
 @dataclass

@@ -23,6 +23,7 @@ from typing import Optional, List, Dict
 from os import path
 
 from kiutils.items.zones import Zone
+from kiutils.items.dimensions import Dimension
 from kiutils.items.common import Image, Position, Coordinate, Net, Group, Font
 from kiutils.items.fpitems import *
 from kiutils.items.gritems import *
@@ -815,6 +816,9 @@ class Footprint():
 
     # TODO: Type hinting for this list
     graphicItems: List = field(default_factory=list)
+
+    dimensions: List[Dimension] = field(default_factory=list)
+    """The ``dimensions`` token defines the list of dimensions that are part of the footprint (KiCad 9 and later)"""
     """The ``graphic`` objects section is a list of one or more graphical objects in the footprint. 
     Possible items are defined in ``kiutils.items.fpitems``. At minimum the reference designator 
     and value text objects are defined. All other graphical objects are optional.
@@ -904,8 +908,7 @@ class Footprint():
             if item[0] == 'net_tie_pad_groups':
                 for layer in item[1:]:
                     object.netTiePadGroups.append(layer)
-            if item[0] == 'dimension':
-                raise NotImplementedError("Dimensions are not yet handled! Please report this bug along with the file being parsed.")
+            if item[0] == 'dimension': object.dimensions.append(Dimension().from_sexpr(item))
 
         return object
 
@@ -1087,6 +1090,8 @@ class Footprint():
         for item in self.pads:
             expression += item.to_sexpr(indent=indent+2)
         for item in self.zones:
+            expression += item.to_sexpr(indent=indent+2)
+        for item in self.dimensions:
             expression += item.to_sexpr(indent=indent+2)
         for item in self.models:
             expression += item.to_sexpr(indent=indent+2)

@@ -1,5 +1,11 @@
 # kiutils - CHANGELOG
 
+## v1.4.10 - 04.10.2026
+
+### Non-breaking changes
+- Added: KiCad 10 nets by name only, `(net "NAME")`, for pads, segments, vias, arcs and zones (`Net.number` is `None`, track items keep the name in `net`)
+- Added: Footprint dimensions (`Footprint.dimensions`), which used to raise `NotImplementedError`
+
 ## v1.4.9 - 10.09.2024
 - Fixed: support for KiCad 8: Updated handling to accommodate renaming of `tstamp` to `uuid`.
 - Added: Net name association for GrPoly in graphic items on the board.

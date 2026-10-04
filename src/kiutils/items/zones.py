@@ -17,7 +17,7 @@ Documentation taken from:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional, List
+from typing import Optional, List, Union
 
 from kiutils.items.common import Position
 from kiutils.utils.strings import dequote
@@ -490,7 +490,7 @@ class Zone():
     """The ``locked`` token defines if the zone may be edited or not (Missing in KiCad
     docu as of 11.02.2022)"""
 
-    net: int = 0
+    net: Union[int, str] = 0
     """The ``net`` token attribute defines by the net ordinal number which net in the nets
     section that the zone is part of"""
 
@@ -634,7 +634,12 @@ class Zone():
         else:
             layer_token = f' (layers{layers})'
 
-        expression =  f'{indents}(zone{locked} (net {self.net}) (net_name "{dequote(self.netName)}"){layer_token}{uuid}{name} (hatch {self.hatch.style} {self.hatch.pitch})\n'
+        # KiCad 10 references the net by name only: (net "NAME") and no (net_name ...)
+        if isinstance(self.net, str):
+            netTokens = f'(net "{dequote(self.net)}")'
+        else:
+            netTokens = f'(net {self.net}) (net_name "{dequote(self.netName)}")'
+        expression =  f'{indents}(zone{locked} {netTokens}{layer_token}{uuid}{name} (hatch {self.hatch.style} {self.hatch.pitch})\n'
         if self.priority is not None:
             expression += f'{indents}  (priority {self.priority})\n'
         expression += f'{indents}  (connect_pads{contype} (clearance {self.clearance}))\n'

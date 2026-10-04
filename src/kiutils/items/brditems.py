@@ -16,10 +16,14 @@ Documentation taken from:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional, List
+from typing import Optional, List, Union
 
 from kiutils.items.common import Position
 from kiutils.utils.strings import dequote
+
+def _netToken(net: Union[int, str]) -> str:
+    """Net reference of a track item: the net number (KiCad 9 and older) or the quoted net name (KiCad 10)"""
+    return f'"{dequote(net)}"' if isinstance(net, str) else f'{net}'
 
 @dataclass
 class GeneralSettings():
@@ -776,7 +780,7 @@ class Segment():
     locked: bool = False
     """The ``locked`` token defines if the line cannot be edited"""
 
-    net: int = 0
+    net: Union[int, str] = 0
     """The ``net`` token defines by the net ordinal number which net in the net
     section that the segment is part of"""
 
@@ -830,7 +834,7 @@ class Segment():
         endline = '\n' if newline else ''
         locked = ' locked' if self.locked else ''
 
-        return f'{indents}(segment{locked} (start {self.start.X} {self.start.Y}) (end {self.end.X} {self.end.Y}) (width {self.width}) (layer "{dequote(self.layer)}") (net {self.net}) (uuid {self.uuid})){endline}'
+        return f'{indents}(segment{locked} (start {self.start.X} {self.start.Y}) (end {self.end.X} {self.end.Y}) (width {self.width}) (layer "{dequote(self.layer)}") (net {_netToken(self.net)}) (uuid {self.uuid})){endline}'
 
 @dataclass
 class Via():
@@ -869,7 +873,7 @@ class Via():
     free: bool = False
     """The ``free`` token indicates that the via is free to be moved outside it's assigned net"""
 
-    net: int = 0
+    net: Union[int, str] = 0
     """The ``net`` token defines by net ordinal number which net in the net section that
     the via is part of"""
 
@@ -939,7 +943,7 @@ class Via():
         free = f' (free)' if self.free else ''
         uuid = f' (uuid {self.uuid})' if self.uuid is not None else ''
 
-        return f'{indents}(via{type}{locked} (at {self.position.X} {self.position.Y}) (size {self.size}) (drill {self.drill}) (layers{layers}){rum}{kel}{free} (net {self.net}){uuid}){endline}'
+        return f'{indents}(via{type}{locked} (at {self.position.X} {self.position.Y}) (size {self.size}) (drill {self.drill}) (layers{layers}){rum}{kel}{free} (net {_netToken(self.net)}){uuid}){endline}'
 
 @dataclass
 class Arc():
@@ -968,7 +972,7 @@ class Arc():
     locked: bool = False
     """The ``locked`` token defines if the arc cannot be edited. Defaults to False."""
 
-    net: int = 0
+    net: Union[int, str] = 0
     """The ``net`` token defines the net ordinal number which net in the net section that arc is part
     of. Defaults to 0."""
 
@@ -1028,7 +1032,7 @@ class Arc():
         expression = f'{indents}(arc{locked} (start {self.start.X} {self.start.Y}) '
         expression += f'(mid {self.mid.X} {self.mid.Y}) (end {self.end.X} {self.end.Y}) '
         expression += f'(width {self.width}) (layer "{dequote(self.layer)}") '
-        expression += f'(net {self.net}){uuid}){endline}'
+        expression += f'(net {_netToken(self.net)}){uuid}){endline}'
         return expression
 
 
